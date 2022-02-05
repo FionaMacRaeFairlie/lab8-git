@@ -48,6 +48,17 @@ exports.landing_page = function(req, res) {
             })
 }
 
+exports.landing_page_json = function(req, res) {
+    db.getAllEntries()
+        .then((list) => {
+            res.send(list);
+            console.log(list);
+            console.log('json endpoint set up');
+        })
+        .catch((err) => {
+            console.log('promise rejected', err);
+        })
+}
 
 exports.new_entries = function(req, res) {
             res.render('newEntry', {

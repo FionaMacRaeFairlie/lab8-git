@@ -2,6 +2,12 @@ const express = require('express');
 const app = express();
 
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  next();
+  });
+
 /*app.use(express.urlencoded({
     extended: true
   }))
@@ -29,9 +35,7 @@ app.set('view engine', 'mustache');
 const router = require('./routes/guestbookRoutes');
 app.use('/', router);
 
-app.listen(3000, () => {
-    console.log('Server started on port 3000. Ctrl^c to quit.');
+app.listen(3001, () => {
+    console.log('Server started on port 3001. Ctrl^c to quit.');
     })
 
-
-  
