@@ -13,6 +13,8 @@ router.post('/new', controller.post_new_entry);
 
 router.get('/posts/:author', controller.show_user_entries);
 
+router.get('/json', controller.landing_page_json);  
+
 router.use(function(req, res) {
         res.status(404);
         res.type('text/plain');
