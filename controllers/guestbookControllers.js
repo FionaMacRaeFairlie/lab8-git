@@ -1,101 +1,101 @@
-const guestbookDAO = require('../models/guestbookModel');
-const db = new guestbookDAO();
- 
-db.init();
+const guestbookDAO = require("../models/guestbookModel");
+const db = new guestbookDAO("../entries.db");
 
-exports.entries_list = function(req, res) {
-    res.send('<h1>Not yet implemented: show a list of guest book entries.</h1>');
-    db.getAllEntries();
-}
+const Users = require("../models/userModel");
 
-/*exports.landing_page = function(req, res) {
-        res.send('<h1>Welcome to my Application.</h1>');
-        }
-*/
+exports.landingPage = function (req, res) {
+  db.getAllEntries()
+    .then((list) => {
+      res.render("entries", {
+        title: "Guest Book",
+        user: req.cookies['username'],
+        entries: list,
+      });
+      console.log("promise resolved");
+    })
+    .catch((err) => {
+      console.log("promise rejected", err);
+    });
+};
 
-/*
-exports.landing_page = function(req, res) {
-res.render("entries",   {         
-    'title': 'Guest Book', 
-    'entries': [     { 
-            'subject'  : 'Good day out',
-            'contents' :'We had a really good time visiting the museum.'   
-        }, 
-        { 
-            'subject'  : 'Good place to be on a rainy day.',      
-            'contents' : 'Nice paintings too.'     
-        }, 
-        { 
-            'subject' : 'Yummy',       
-            'contents': 'Good food :-).'     
-        } 
-    ] 
-}); 
-}
-*/
+exports.newEntry = function (req, res) {
+  res.render("newEntry", {
+    title: "Guest Book",
+    user: req.cookies['username'] 
+  });
+};
 
-exports.landing_page = function(req, res) {
-        db.getAllEntries()
-            .then((list) => {
-                res.render('entries', {
-                    'title': 'Guest Book',
-                    'entries': list
-                });
-                console.log('promise resolved');
-            })
-            .catch((err) => {
-                console.log('promise rejected', err);
-            })
-}
+exports.showUserEntries = function (req, res) {
+  console.log("filtering author name", req.params.author);
+  let user = req.params.author;
+  db.getEntriesByUser(user)
+    .then((entries) => {
+      res.render("entries", {
+        title: "Guest Book",
+        user: req.cookies['username'] ,
+        entries: entries,
+      });
+    })
+    .catch((err) => {
+      console.log("error handling author posts", err);
+    });
+};
 
-exports.landing_page_json = function(req, res) {
-    db.getAllEntries()
-        .then((list) => {
-            res.send(list);
-            console.log(list);
-            console.log('json endpoint set up');
-        })
-        .catch((err) => {
-            console.log('promise rejected', err);
-        })
-}
+exports.jsonPage = function (req, res) {
+  db.getAllEntries()
+    .then((list) => {
+      res.send(list);
+      console.log(list);
+      console.log("json endpoint set up");
+    })
+    .catch((err) => {
+      console.log("promise rejected", err);
+    });
+};
 
-exports.new_entries = function(req, res) {
-            res.render('newEntry', {
-            'title': 'Guest Book'
-            })
-}
+exports.showRegisterPage = function (req, res) {
+  res.render("user/register");
+};
 
-
-exports.post_new_entry = function(req, res) {
-    console.log('processing post-new_entry controller');
-    if (!req.body.author) {
-    response.status(400).send("Entries must have an author.");
-    return;
+exports.registerNewUser = async (req, res) =>{
+  try {
+    const user = await Users.findOne({ user: req.body.username });
+    if (user) {
+      res.status(400).send({"User already exits": user.user });
+      return;
     }
-    db.addEntry(req.body.author, req.body.subject, req.body.contents);
-    res.redirect('/');
-}
+
+     Users.add(req.body.username, req.body.pass);
+     res.render( "user/login")
+  }
+   catch (err) {
+    console.log(err);
+  }
+};
+
+exports.showLoginPage = function (req, res) {
+  res.render("user/login");
+};
+
+exports.notLoggedIn = function (req, res) {
+  res.render("user/notLoggedIn");
+};
+
+exports.postNewEntry = function (req, res) {
+  console.log("processing post-new_entry controller");
+  if (!req.body.author) {
+    res.status(400).send("Entries must have an author.");
+    return;
+  }
+  db.addEntry(req.body.author, req.body.subject, req.body.contents);
+  res.redirect("/")
+};
+
+exports.handleLogin = function (req, res) {
+  res.render("newEntry", {
+    title: "Guest Book",
+    user:req.cookies['username'],
+  });
+};
 
 
-exports.peters_entries = function(req, res) {
-     res.send('<h1>Processing Peter\'s Entries, see terminal</h1>');
-    db.getPetersEntries();
-}
-
-exports.show_user_entries = function(req, res) {
-                console.log('filtering author name', req.params.author);
-                let user = req.params.author;
-                db.getEntriesByUser(user).then(
-                    (entries) => {
-                     res.render('entries', {
-                        'title': 'Guest Book',
-                         'entries': entries
-                });
-             }).catch((err) => {
-                console.log('error handling author posts', err);
-                });
-}
-
-
-        

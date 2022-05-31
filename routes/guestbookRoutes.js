@@ -1,19 +1,42 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const controller = require('../controllers/guestbookControllers.js');
+const passport = require("passport");
+const auth = require('../controllers/authController');
+const controller = require("../controllers/guestbookControllers");
 
-router.get("/", controller.landing_page);
+router.get("/", controller.landingPage);
 
-router.get('/guestbook', controller.entries_list);
+router.get("/new", controller.newEntry);
 
-router.get('/peter', controller.peters_entries);
+router.get("/posts/:author", controller.showUserEntries);
 
-router.get('/new', controller.new_entries);
-router.post('/new', controller.post_new_entry);
+router.get("/json", controller.jsonPage);
 
-router.get('/posts/:author', controller.show_user_entries);
+router.get("/register", controller.showRegisterPage);
+router.post("/register", controller.registerNewUser);
 
-router.get('/json', controller.landing_page_json);  
+router.get("/login", controller.showLoginPage);
+router.post("/login", auth.login);
+
+router.get("/notLoggedIn", controller.notLoggedIn);
+
+router.post("/new",
+  passport.authenticate("jwt", {
+    session: false,
+    failureRedirect: "/notLoggedIn",
+  }),
+  controller.postNewEntry
+);
+
+router.get("/loggedIn",
+  passport.authenticate("jwt", {
+    session: false,
+    failureRedirect: "/notLoggedIn",
+  }),
+  controller.handleLogin
+);
+
+router.get("/logout", auth.logout);
 
 router.use(function(req, res) {
         res.status(404);
@@ -26,7 +49,5 @@ router.use(function(err, req, res, next) {
         res.type('text/plain');
         res.send('Internal Server Error.');
     });
-
-
 
 module.exports = router;
